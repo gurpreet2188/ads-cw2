@@ -36,18 +36,16 @@ class Menu:
                 nav.showDvdLists(self.__dvdListPage)
                 self.dvdMneu()
             case 3:
-                nav.showCustomerList(self.__customerListPage)
+                nav.showCustomerListRenting(self.__customerListPage)
                 self.customerMenu('return')
             case 4:
                 self.adminMenu()
             case 5:
                 return
-            
+
     def transactionMenu(self):
         nav = self.__nav
         self.dvdMneu()
-        
-   
 
     def adminMenu(self):
         nav = self.__nav
@@ -56,8 +54,9 @@ class Menu:
             'Enter 2 to add new Customer',
             'Enter 3 to update Customer details',
             'Enter 4 to add new DVD',
-            'Enter 5 to update DVD',
-            'Enter 6 for Main Menu',
+            'Enter 5 to delete a customer entry'
+            'Enter 6 to update DVD',
+            'Enter 7 for Main Menu',
         ]
         option = self.__inputHelper.menuInput(
             self.__common, options, 'Admin Options')
@@ -66,25 +65,40 @@ class Menu:
                 nav.showCustomerList(self.__customerListPage)
                 self.customerMenu()
             case 2:
-                return
+                nav.showAddCustomer()
+                save = self.__inputHelper.stringInput(
+                    'Save details? (1 = yes, 0 = no): ', type='number')
+                if int(save) == 1:
+                    print('saving')
+                    nav.saveDetails('new', 'customer')
+                    self.mainMenu()
+                else:
+                    self.mainMenu()
             case 3:
-                return
+                nav.showCustomerList(self.__customerListPage)
+                self.customerMenu('update')
             case 4:
-                return
+                nav.showCustomerList(self.__customerListPage)
             case 5:
+                nav.showCustomerList(self.__customerListPage)
+                self.customerMenu('delete')
+            case 6:
                 nav.showDvdLists(self.__dvdListPage)
                 self.dvdEditMenu()
-            case 6:
+            case 7:
                 self.mainMenu()
+                
+    
+        
 
     def dvdEditMenu(self):
-        
+
         def saveConfirmation(check):
             if check == 1:
                 nav.saveDetails('update')
             elif check == 2:
                 self.mainMenu()
-                
+
         nav = self.__nav
         options = [
             'Enter 1 to check out another page',
@@ -134,8 +148,6 @@ class Menu:
                             self.dvdEditMenu()
             case 3:
                 self.mainMenu()
-                
-        
 
     def dvdMneu(self):
         nav = self.__nav
@@ -173,9 +185,9 @@ class Menu:
         ]
         option = self.__inputHelper.menuInput(
             self.__common, options, 'DVD Options')
-        
+
         match option:
-           case 1:
+            case 1:
                 options = [
                     'Enter 1 to rent exisiting customer',
                     'Enter 2 to rent for new customer',
@@ -183,7 +195,7 @@ class Menu:
                 ]
                 option = self.__inputHelper.menuInput(
                     self.__common, options, 'DVD Options')
-                
+
                 match option:
                     case 1:
                         nav.showCustomerList(self.__customerListPage)
@@ -192,10 +204,10 @@ class Menu:
                         pass
                     case 3:
                         self.mainMenu()
-           case 2:
-               pass
-           case 3:
-               self.mainMenu() 
+            case 2:
+                pass
+            case 3:
+                self.mainMenu()
 
     def checkOut(self):
         nav = self.__nav
@@ -241,7 +253,57 @@ class Menu:
                     self.customerMenu()
             case 3:
                 self.mainMenu()
-
+                
+    def customerEditMenu(self, cusID):
+        nav = self.__nav
+        options = [
+            'Enter 1 to change first name',
+            'Enter 2 to change last name',
+            'Enter 3 to change gender',
+            'Enter 4 to change contact',
+            'Enter 5 to done editing and save details',
+            'Enter 6 for main menu',
+        ]
+         
+        option = self.__inputHelper.menuInput(
+            self.__common, options, 'Customer Edit Menu')
+        
+        match option:
+            case 1:
+                nav.showUpdateCustomer(cusID, 'firstName')
+                self.customerEditMenu(cusID)
+            case 2:
+                nav.showUpdateCustomer(cusID, 'lastName')
+                self.customerEditMenu(cusID)
+            case 3:
+                nav.showUpdateCustomer(cusID, 'gender')
+                self.customerEditMenu(cusID)
+            case 4:
+                nav.showUpdateCustomer(cusID, 'contact')
+                self.customerEditMenu(cusID)
+            case 5:
+                nav.saveDetails('update','customer')
+                self.mainMenu()
+            case 6:
+                self.mainMenu()
+                
+    def customerDeleteMenu(self, cusID):
+        nav = self.__nav
+        options = [
+            'Enter 1 to delete',
+            'Enter 2 to cancel and return to main menu',
+        ]
+        
+        option = self.__inputHelper.menuInput(
+            self.__common, options, 'Customer Delete Menu')
+        
+        match option:
+            case 1:
+                nav.saveDetails('delete','customer')
+            case 2:
+                self.mainMenu()
+            
+            
     def customerMenu(self, menuType=None):
         nav = self.__nav
         options = [
@@ -257,26 +319,37 @@ class Menu:
                 if pageNum == 'exit':
                     self.mainMenu()
                 else:
-                    nav.showCustomerList(pageNum)
+                    if menuType == 'return':
+                        nav.showCustomerListRenting(pageNum)
+                    else:
+                        nav.showCustomerList(pageNum)
                     self.customerMenu()
             case 2:
                 cusID = self.detailsMenu('ID')
                 if cusID == 'exit':
                     self.mainMenu()
                 else:
-                    nav.showCustomerDetail(cusID)
+        
                     if menuType == 'return':
+                        nav.showCustomerDetail(cusID)
                         self.customerMenuForReturn(cusID)
+                    elif menuType == 'update':
+                        nav.showCustomerDetail(cusID)
+                        self.customerEditMenu(cusID)
+                    elif menuType == 'delete':
+                        nav.showCustomerDetail(cusID)
+                        self.customerDeleteMenu(cusID)
                     else:
+                        nav.showCustomerDetail(cusID)
                         self.customerMenu()
             case 3:
                 self.mainMenu()
-                
+
     def customerMenuForReturn(self, cusID):
         nav = self.__nav
         options = [
             'Enter 1 to enter DVD ID for returing',
-            'Enter 3 for Main Menu',
+            'Enter 2 for Main Menu',
         ]
         option = self.__inputHelper.menuInput(
             self.__common, options, 'Customer Menu')
@@ -290,12 +363,11 @@ class Menu:
                     self.customerMenu()
             case 2:
                 self.mainMenu()
-                
 
     def searchPrompt(self):
         msg = f'Enter the Movie Title: '
-        return self.__inputHelper.stringInput(msg,'any')
-    
+        return self.__inputHelper.stringInput(msg, 'any')
+
     def detailsMenu(self, promptType, promptType2=None):
         if promptType2:
             msg = f'Enter {promptType2} OR \'exit\' for Main Menu: '

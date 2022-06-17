@@ -6,7 +6,7 @@ import dvd
 
 
 class Customer(Person):
-    def __init__(self):
+    def __init__(self, dataType=None):
         super().__init__()
         self.__id = None
         self.__contact = None
@@ -18,35 +18,39 @@ class Customer(Person):
         self.__root = None
         self.__dvd = dvd.DVD()
         self.__print = printHelper.PrintHelper()
-        self.setBST('id')
+        self.setBST('id' if dataType == None else dataType)
+        self.__customerBST.setPages()
 
     def __insertNode(self, dataType):
         for n, i in enumerate(self.__mainList):
             if dataType == 'id':
+                i['id'] = int(i['id'])
+                if self.__root == None:
+                        self.__root = self.__customerBST.setRoot(
+                            i['id'], i, nodeType='id')
+                else:
+                    self.__root.insert(i['id'], i, nodeType='id')
+
+            elif dataType == 'renting':
                 if i['renting'] != '':
-                    i[dataType] = int(i[dataType]) if dataType == 'id' else str(i[dataType])
+                    i['id'] = int(i['id'])
                     if self.__root == None:
-                        self.__root = self.__customerBST.setRoot(i[dataType], i)
+                        self.__root = self.__customerBST.setRoot(
+                            i['id'], i, nodeType='id')
                     else:
-                        self.__root.insert(i[dataType], i)
-            # i[dataType] = int(
-            #     i[dataType]) if dataType == 'id' else str(i[dataType])
-            # if n == 0:
-            #     self.__root = self.__customerBST.setRoot(i[dataType], i)
-            # else:
-            #     self.__root.insert(i[dataType], i)
+                        self.__root.insert(i['id'], i, nodeType='id')
+            
 
     def setBST(self, dataType):
         match dataType:
             case 'id':
                 self.__insertNode('id')
-            case 'firstName':
-                self.__insertNode('firstName')
+                return
+            case 'renting':
+                self.__insertNode('renting')
+                return
 
-            case 'lastName':
-                self.__insertNode('lastName')
-                
-        self.__customerBST.setPages()
+        
 
     def setID(self, id=None):
         if id == None:
@@ -69,8 +73,6 @@ class Customer(Person):
             self.__renting = renting.split(',')
         elif isinstance(renting, list):
             self.__renting = renting
-        # if newRenting:
-        #     self.__renting.append(newRenting)
 
     def getID(self) -> str:
         return self.__id
@@ -85,9 +87,9 @@ class Customer(Person):
         return self.__renting
 
     def setVals(self, cusID):
-        print('cusID: ', type(cusID))
+        # print('cusID: ', type(cusID))
         vals = self.__customerBST.search(cusID)
-        print(vals)
+        # print(vals)
         if vals:
             self.setID(vals.data['id'])
             super().setFirstName(vals.data['firstName'])
@@ -122,11 +124,10 @@ class Customer(Person):
 
         self.__print.printColumn(cliList, 120, 'Customers\' IDs and Names')
         self.__print.printFooter(
-                f'Showing page {pageNum} of {self.__customerBST.totalPages}')
-        # self.__print.printFooter(f'')
+            f'Showing page {pageNum} of {self.__customerBST.totalPages}')
 
     def printDetail(self, cusID):
-        print(self.__id)
+        # print(self.__id)
         if self.__id is None:
             val = self.setVals(cusID)
         else:
@@ -161,55 +162,71 @@ class Customer(Person):
             self.__print.printColumn(renting, 20, 'Currently Renting')
         else:
             self.__print.printFooter('ID Not Found.')
+            
+    # def updateVals(self, cusID):
+    #     self.setVals(cusID)
+    
+    
+        
 
-    def update(self, id):
+    def update(self, updateType=None):
         header = ['id', 'firstName', 'lastName',
                   'gender', 'number', 'rented', 'renting']
 
-        self.__customerBST.update(id, self.__valsDict())
+        self.__customerBST.update(self.getID(), self.__valsDict())
+        newMainList=[]
+        # print(type(self.getID()))
+        for m in self.__mainList:
+            if updateType == 'delete':
+                if str(m['id']) != str(self.getID()):
+                    newMainList.append(m)
+            else:
+                if str(m['id']) == str(self.getID()):
+                    newMainList.append(self.__valsDict())
+                else:
+                    newMainList.append(m)
+                              
+        self.__csv.writerNew('customer2.csv', newMainList, header)
         
-    def addCustomer(self):
+    def addNewCustomerToBST(self):
+        if self.__root:
+            self.__root.insert(self.getID(),self.__valsDict(),nodeType='id')
+            
+
+
+    def saveToFile(self):
         header = ['id', 'firstName', 'lastName',
                   'gender', 'number', 'rented', 'renting']
 
         self.__mainList.append(self.__valsDict())
-        self.__csv.writer('customer.csv',self.__valsDict(),header)
-        print(self.__mainList[-1])
-    # def search(self, dataType, searchText):
-    #     if self.__root:
-    #         self.setBST(dataType)
-    #         self.__customerBST.search(self.__root, searchText)
-        # if self.__customerBST.getSearchResults() != []:
-        #     print(self.__customerBST.getSearchResults())
-        # match dataType:
-        #     case 'id':
-        #         self.setBST()
-        #         self.__customerBST.search(self.__root, searchText)
-        #         print(self.__customerBST.getSearchResults())
-        #     case 'firstName':
-        #         self.__customerBST.search(self.__root, searchText)
-        #         print(self.__customerBST.getSearchResults())
-        #     case 'lastName':
-        #         self.__customerBST.search(self.__root, searchText)
-        #         print(self.__customerBST.getSearchResults())
+        self.__csv.writer('customer.csv', self.__valsDict(), header)
 
-    # def smallest(self):
-    #     # self.__customerBST.getAll(self.__root)
-    #     return self.__customerBST.getSmallestVal(self.__root)
+    def search(self, searchID):
+        if self.__root:
+            if isinstance(searchID, int):
+                check = self.__customerBST.search(searchID)
+                if check:
+                    self.printDetail(searchID)
+                    
+    def reloadPages(self):
+        self.__customerBST.reset()
+        self.__customerBST.setPages()
 
-    # def largest(self):
-    #     # self.__customerBST.getAll(self.__root)
-    #     return self.__customerBST.getLargestVal(self.__root)
-
-    # def getAll(self):
-    #     self.__customerBST.getAll()
-
-    # def reset(self):
-    #     self.setBST('id')
-    #     self.__customerBST.reset()
+    def reset(self):
+        self.__root = None
+        self.__customerBST.reset()
 
 
-# c = Customer()
+# c = Customer('renting')
+# c.printDetail(200)
+# c.printList(3)
+# c.printList(1)
+# c.setBST('renting')
+# c.printList(3)
+# c.reset()
+# c.setBST('renting')
+# c.printList(1)
+# c.search(200)
 # c.setBST('id')
 # c.setID()
 # # print(c.getID())

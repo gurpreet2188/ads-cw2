@@ -1,12 +1,9 @@
 import time
-
-from tomlkit import item
 class BSTNode:
     def __init__(self, node, data, nodeType=None):
         self.node = node
         self.data = data
         self.nodeType = nodeType
-        # self.index = None
         self.right = None
         self.left = None
         self.total = 1
@@ -55,9 +52,8 @@ class BSTNode:
     def update(self, node, data):
         current = self.searchNode(node)
         if current:
-            print(current.data)
             current.data = data
-            print(current.data)
+           
 
     def searchNode(self, node):
         if self.node == node:
@@ -96,14 +92,8 @@ class BSTNode:
 
     def splitList(self, pageNum, start, end, totalPages, total):
         items = []
-        # print(index)
         items += self.left.splitList(pageNum, start,
                                      end, totalPages, total) if self.left else []
-        # if self.index:
-        #     self.index = None
-        # if self.index is None:
-        #     self.index = 0
-        # print(start[pageNum], end[pageNum])
         if pageNum == 1:
             if start[pageNum - 1] <= self.node <= end[pageNum - 1]:
                 items.append(self)
@@ -115,7 +105,6 @@ class BSTNode:
                 items.append(self)
         items += self.right.splitList(pageNum, start,
                                       end, totalPages, total)if self.right else []
-        # self.index += 1
         return items
 
 
@@ -126,14 +115,15 @@ class BSTWrapper:
         self.start = []
         self.end = []
         self.total = 1
+        self.pageSet = False
 
-    def setRoot(self, node, data):
-        self.root = BSTNode(node, data)
+    def setRoot(self, node, data, nodeType=None):
+        self.root = BSTNode(node, data, nodeType)
         return self.root
 
-    def insert(self, node, data):
+    def insert(self, node, data, nodeType=None):
         if self.root is not None:
-            self.root.insert(node, data)
+            self.root.insert(node, data, nodeType)
 
     def delete(self, node):
         return self.root.delete(node)
@@ -161,9 +151,10 @@ class BSTWrapper:
             return self.root.searchNode(node)
 
     def setPages(self):
+        
         items = self.root.inorder()
         self.total = items[-1].node
-        print(items[19].node, items[39].node, items[59].node, items[79].node, items[99].node)
+        # print(items[19].node, items[39].node, items[59].node, items[79].node, items[99].node)
         for i in range(0, len(items), 20):
             if i == 0:
                 self.start.append(items[0].node)
@@ -171,8 +162,19 @@ class BSTWrapper:
                 self.start.append(items[i - 1].node)
                 self.end.append(items[i - 1].node)
             self.totalPages += 1
+            
+            self.pageSet =True
+        
+        return self.pageSet
             # time.sleep(3)
-        print(self.start, self.end)
+        # print(self.start, self.end)
+    
+    def reset(self):
+        self.totalPages = 0
+        self.start = []
+        self.end = []
+        self.total = 1
+        self.pageSet = False
         
         
     def splitList(self, pageNum):
