@@ -15,7 +15,7 @@ class CSVReaderWriter:
     def reader(self, file):
         temp = []
         try:
-            with open(file, 'r') as f:
+            with open(file, 'r', encoding="utf-8") as f:
                 r = csv.DictReader(f, delimiter=',')
                 for i in r:
                     temp.append(i)
@@ -36,14 +36,14 @@ class CSVReaderWriter:
     #             header -> header for the csv file.
     def writer(self, file, row, header):
         try:
-            with open(file, 'a', newline='') as file:
+            with open(file, 'a', newline='', encoding="utf-8") as file:
                 w = csv.DictWriter(file, header)
                 w.writerow(row)
         except ValueError as e:
             print('File Error!!')
 
     def writerNew(self, file, rows, header):
-        with open(file, 'w', newline='') as file:
+        with open(file, 'w', newline='', encoding="utf-8") as file:
             w = csv.DictWriter(file, header)
             w.writeheader()
             w.writerows(rows)

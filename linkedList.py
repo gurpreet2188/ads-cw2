@@ -3,6 +3,8 @@ class Node:
         self.data = data
         self.next = None
 
+# A B C 
+# A -> B -> C -> None
 
 class LinkedList:
     def __init__(self):
@@ -117,20 +119,21 @@ class LinkedList:
         else:
             return False
 
-    def __iter__(self):
-        node = self.__head
-        while node is not None:
-            yield node
-            node = node.next
+    # def __iter__(self):
+    #     node = self.__head
+    #     while node is not None:
+    #         yield node
+    #         node = node.next
 
-    def updateData(self, id, data):
+    def updateData(self, dvdID, data):
         if self.__head == None:
             return False
         current = self.__head
 
         while current:
-            if id == current.data['id']:
+            if str(dvdID )== str(current.data['id']):
                 current.data = data
+                print('updating dvd --------------')
                 break
             current = current.next
 

@@ -1,5 +1,6 @@
 import inputHelper
 import navigation
+import os
 
 
 class Menu:
@@ -41,6 +42,7 @@ class Menu:
             case 4:
                 self.adminMenu()
             case 5:
+                os.system('cls' if os.name == 'nt' else 'clear')
                 return
 
     def transactionMenu(self):
@@ -53,10 +55,12 @@ class Menu:
             'Enter 1 to view Customer List',
             'Enter 2 to add new Customer',
             'Enter 3 to update Customer details',
-            'Enter 4 to add new DVD',
-            'Enter 5 to delete a customer entry'
-            'Enter 6 to update DVD',
-            'Enter 7 for Main Menu',
+            'Enter 4 to delete a customer entry',
+            'Enter 5 to view DVD List',
+            'Enter 6 to add new DVD',
+            'Enter 7 to update DVD',
+            'Enter 8 to delete a DVD',
+            'Enter 9 for Main Menu',
         ]
         option = self.__inputHelper.menuInput(
             self.__common, options, 'Admin Options')
@@ -79,15 +83,25 @@ class Menu:
                 self.customerMenu('update')
             case 4:
                 nav.showCustomerList(self.__customerListPage)
-            case 5:
-                nav.showCustomerList(self.__customerListPage)
                 self.customerMenu('delete')
+            case 5:
+               nav.showDvdLists(self.__dvdListPage)
+               self.dvdMneu()
             case 6:
+                nav.showAddDVD()
+                save = self.confirmMenu()
+                if save == 1:
+                    nav.saveDetails('new','dvd')
+                self.mainMenu()
+            case 7:
                 nav.showDvdLists(self.__dvdListPage)
                 self.dvdEditMenu()
-            case 7:
-                self.mainMenu()
+            case 8:
+                nav.showDvdLists(self.__dvdListPage)
+                self.dvdMneu('delete')
                 
+            case 9:
+                self.mainMenu()
     
         
 
@@ -95,7 +109,8 @@ class Menu:
 
         def saveConfirmation(check):
             if check == 1:
-                nav.saveDetails('update')
+                nav.saveDetails('update', 'dvd')
+                self.mainMenu()
             elif check == 2:
                 self.mainMenu()
 
@@ -148,8 +163,25 @@ class Menu:
                             self.dvdEditMenu()
             case 3:
                 self.mainMenu()
+                
+    def dvdDeleteMenu(self):
+        nav = self.__nav
+        options = [
+            'Enter 1 to delete',
+            'Enter 2 to cancel and return to main menu',
+        ]
+        
+        option = self.__inputHelper.menuInput(
+            self.__common, options, 'DvD Delete Menu')
+        
+        match option:
+            case 1:
+                nav.saveDetails('delete','dvd')
+                self.mainMenu()
+            case 2:
+                self.mainMenu()
 
-    def dvdMneu(self):
+    def dvdMneu(self, actionType=None):
         nav = self.__nav
         options = [
             'Enter 1 to check out another page',
@@ -168,11 +200,16 @@ class Menu:
                     self.dvdMneu()
             case 2:
                 dvdID = self.detailsMenu('ID')
+
                 if dvdID == 'exit':
                     self.mainMenu()
                 else:
-                    nav.showDvdDetails(dvdID)
-                    self.dvdDetailsMenu(dvdID)
+                    if actionType=='delete':
+                        nav.showDvdDetails(dvdID)
+                        self.dvdDeleteMenu()
+                    else:
+                        nav.showDvdDetails(dvdID)
+                        self.dvdDetailsMenu(dvdID)
             case 3:
                 self.mainMenu()
 
@@ -180,52 +217,55 @@ class Menu:
         nav = self.__nav
         options = [
             'Enter 1 to rent this DVD',
-            'Enter 2 to continue viewing DVDs',
-            'Enter 3 for Main Menu',
+            # 'Enter 2 to continue viewing DVDs',
+            'Enter 2 for Main Menu',
         ]
         option = self.__inputHelper.menuInput(
             self.__common, options, 'DVD Options')
 
         match option:
             case 1:
-                options = [
-                    'Enter 1 to rent exisiting customer',
-                    'Enter 2 to rent for new customer',
-                    'Enter 3 for Main Menu',
-                ]
-                option = self.__inputHelper.menuInput(
-                    self.__common, options, 'DVD Options')
-
-                match option:
-                    case 1:
-                        nav.showCustomerList(self.__customerListPage)
-                        self.customerMenuForRent(dvdID)
-                    case 2:
-                        pass
-                    case 3:
-                        self.mainMenu()
+                nav.showCustomerList(self.__customerListPage)
+                self.customerMenuForRent(dvdID)
+                # options = [
+                #     'Enter 1 to rent exisiting customer',
+                #     'Enter 2 to rent for new customer',
+                #     'Enter 3 for Main Menu',
+                # ]
+                # option = self.__inputHelper.menuInput(
+                #     self.__common, options, 'DVD Options')
+                # match option:
+                #     case 1:
+                #         nav.showCustomerList(self.__customerListPage)
+                #         self.customerMenuForRent(dvdID)
+                #     case 2:
+                #         pass
+                #     case 3:
+                #         self.mainMenu()
+            # case 2:
+            #     nav.showDvdLists(self.__dvdListPage)
+            #     self.dvdMneu()
+                # self.dvdDetailsMenu(dvdID)
             case 2:
-                pass
-            case 3:
                 self.mainMenu()
 
-    def checkOut(self):
-        nav = self.__nav
-        options = [
-            'Enter 1 check-out this DVD',
-            'Enter 2 to continue viewing more DVDs',
-            'Enter 3 for Main Menu',
-        ]
-        option = self.__inputHelper.menuInput(
-            self.__common, options, 'Check-Out')
-        match option:
-            case 1:
-                return
-            case 2:
-                nav.showDvdLists(self.__dvdListPage)
-                self.dvdMneu()
-            case 3:
-                self.mainMenu()
+    # def checkOut(self):
+    #     nav = self.__nav
+    #     options = [
+    #         'Enter 1 check-out this DVD',
+    #         # 'Enter 2 to continue viewing more DVDs',
+    #         'Enter 2 for Main Menu',
+    #     ]
+    #     option = self.__inputHelper.menuInput(
+    #         self.__common, options, 'Check-Out')
+    #     match option:
+    #         case 1:
+    #             return
+    #         case 2:
+    #             # nav.showDvdLists(self.__dvdListPage)
+    #             # self.dvdMneu()
+    #         case 2:
+    #             self.mainMenu()
 
     def customerMenuForRent(self, dvdID):
         nav = self.__nav
@@ -360,7 +400,7 @@ class Menu:
                     self.mainMenu()
                 else:
                     nav.showTransactionReturn(dvdID, cusID)
-                    self.customerMenu()
+                    self.mainMenu()
             case 2:
                 self.mainMenu()
 

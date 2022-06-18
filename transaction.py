@@ -12,8 +12,9 @@ class Transaction:
         self.__print = printHelper.PrintHelper()
 
     def rentDvd(self, dvdID, cusID):
-        self.__dvd.setID(dvdID)
-        self.__dvd.setCopies()
+        # print(dvdID, cusID)
+        # self.__dvd.setID(dvdID)
+        # self.__dvd.setCopies()
         copies = self.__dvd.getCopies()
         if int(copies) > 0:
             self.__customer.setVals(cusID)
@@ -21,10 +22,14 @@ class Transaction:
             if customerDVDID != []:
                 for cd in customerDVDID:
                     if str(cd) == str(dvdID):
-                        return self.__print.printFooter('Customer is already renting this DVD')
+                        self.__print.printFooter('Customer is already renting this DVD')
+                        return False
             newCopies = copies - 1
             self.__dvd.setCopies(newCopies)
+            self.__dvd.updateCopies()
+            self.__dvd.reset()
             customerDVDID.append(dvdID)
+            
             self.__customer.setRenting(customerDVDID)
             self.__print.printFooter('Updated currently rented DVD details.')
             self.__customer.printDetail(cusID)
@@ -57,3 +62,4 @@ class Transaction:
             self.__customer.printDetail(cusID)
         else:
             return self.__print.printFooter('ID not found')
+        

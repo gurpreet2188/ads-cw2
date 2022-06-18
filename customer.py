@@ -2,11 +2,11 @@ from person import Person
 import bstNode
 import csvHelper
 import printHelper
-import dvd
+# import dvd
 
 
 class Customer(Person):
-    def __init__(self, dataType=None):
+    def __init__(self, dvd, dataType=None):
         super().__init__()
         self.__id = None
         self.__contact = None
@@ -16,7 +16,7 @@ class Customer(Person):
         self.__mainList = self.__csv.reader('customer.csv')
         self.__customerBST = bstNode.BSTWrapper()
         self.__root = None
-        self.__dvd = dvd.DVD()
+        self.__dvd = dvd
         self.__print = printHelper.PrintHelper()
         self.setBST('id' if dataType == None else dataType)
         self.__customerBST.setPages()
@@ -26,8 +26,8 @@ class Customer(Person):
             if dataType == 'id':
                 i['id'] = int(i['id'])
                 if self.__root == None:
-                        self.__root = self.__customerBST.setRoot(
-                            i['id'], i, nodeType='id')
+                    self.__root = self.__customerBST.setRoot(
+                        i['id'], i, nodeType='id')
                 else:
                     self.__root.insert(i['id'], i, nodeType='id')
 
@@ -39,7 +39,6 @@ class Customer(Person):
                             i['id'], i, nodeType='id')
                     else:
                         self.__root.insert(i['id'], i, nodeType='id')
-            
 
     def setBST(self, dataType):
         match dataType:
@@ -50,13 +49,13 @@ class Customer(Person):
                 self.__insertNode('renting')
                 return
 
-        
-
     def setID(self, id=None):
+        print(id)
         if id == None:
             lastNnode = self.__customerBST.getLargestNode().node
             self.__id = lastNnode + 1
-            return self.__id
+            return
+            # return self.__id
         self.__id = id
 
     def setContact(self, contact):
@@ -70,6 +69,7 @@ class Customer(Person):
 
     def setRenting(self, renting):
         if isinstance(renting, str):
+            print(renting)
             self.__renting = renting.split(',')
         elif isinstance(renting, list):
             self.__renting = renting
@@ -128,10 +128,10 @@ class Customer(Person):
 
     def printDetail(self, cusID):
         # print(self.__id)
-        if self.__id is None:
-            val = self.setVals(cusID)
-        else:
-            val = True
+        # if self.__id is None:
+        val = self.setVals(cusID)
+        # else:
+        #     val = True
         if val:
             cusID = f"ID: {self.getID()}"
             firstName = f"First Name: {self.getFirstName()}"
@@ -139,42 +139,39 @@ class Customer(Person):
             gender = f"Gender: {self.getGender()}"
             number = f"Contact: {self.getContact()}"
 
-            rented = []
-            renting = []
+            oldrented = []
+            oldrenting = []
             for rd in self.__rented:
                 if rd:
                     rdStr = f'ID: {rd} Title: {self.__dvd.getDVDTitle(rd)}'
-                    rented.append(rdStr)
+                    oldrented.append(rdStr)
                 else:
-                    rented.append('None')
+                    oldrented.append('None')
 
             for rt in self.__renting:
                 if rt:
                     rtStr = f'ID: {rt} Title: {self.__dvd.getDVDTitle(rt)}'
-                    renting.append(rtStr)
+                    oldrenting.append(rtStr)
                 else:
-                    renting.append('None')
+                    oldrenting.append('None')
 
             cliList = [cusID, firstName, lastName,
                        gender, number]
             self.__print.printColumn(cliList, 30, 'Customer Details')
-            self.__print.printColumn(rented, 20, 'Previously Rented')
-            self.__print.printColumn(renting, 20, 'Currently Renting')
+            self.__print.printColumn(oldrented, 20, 'Previously Rented')
+            self.__print.printColumn(oldrenting, 20, 'Currently Renting')
         else:
             self.__print.printFooter('ID Not Found.')
-            
+
     # def updateVals(self, cusID):
     #     self.setVals(cusID)
-    
-    
-        
 
     def update(self, updateType=None):
         header = ['id', 'firstName', 'lastName',
                   'gender', 'number', 'rented', 'renting']
 
         self.__customerBST.update(self.getID(), self.__valsDict())
-        newMainList=[]
+        newMainList = []
         # print(type(self.getID()))
         for m in self.__mainList:
             if updateType == 'delete':
@@ -185,14 +182,12 @@ class Customer(Person):
                     newMainList.append(self.__valsDict())
                 else:
                     newMainList.append(m)
-                              
-        self.__csv.writerNew('customer2.csv', newMainList, header)
-        
+
+        self.__csv.writerNew('customer.csv', newMainList, header)
+
     def addNewCustomerToBST(self):
         if self.__root:
-            self.__root.insert(self.getID(),self.__valsDict(),nodeType='id')
-            
-
+            self.__root.insert(self.getID(), self.__valsDict(), nodeType='id')
 
     def saveToFile(self):
         header = ['id', 'firstName', 'lastName',
@@ -207,7 +202,7 @@ class Customer(Person):
                 check = self.__customerBST.search(searchID)
                 if check:
                     self.printDetail(searchID)
-                    
+
     def reloadPages(self):
         self.__customerBST.reset()
         self.__customerBST.setPages()
@@ -215,6 +210,8 @@ class Customer(Person):
     def reset(self):
         self.__root = None
         self.__customerBST.reset()
+        self.setBST('id')
+        self.__customerBST.setPages()
 
 
 # c = Customer('renting')

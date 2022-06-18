@@ -1,21 +1,17 @@
-# from importlib import reload
-import loadData
-import transaction
-import movies
 import dvd
 import inputHelper
-# import customer
+import printHelper
+import customer
 
 
 class CRUD:
     def __init__(self):
-        self.__data = loadData.LoadData()
-        self.__customer = self.__data.customer
-        self.__dvd = self.__data.dvd
-        # self.__customerRenting = self.__data.customerRenting
-        self.__transaction = transaction.Transaction(
-            self.__dvd, self.__customer)
+        
+        self.__dvd = dvd.DVD()
+        self.__movies = self.__dvd.getMovies()
+        self.__customer = customer.Customer(self.__dvd)
         self.__inputHelper = inputHelper.InputHelper()
+        self.__print = printHelper.PrintHelper()
 
     def addCustomer(self):
         msg1 = 'Enter First Name: '
@@ -68,67 +64,69 @@ class CRUD:
         self.__customer.printDetail(cusID)
 
     def addMovie(self):
-        newMovie = movies.Movies()
+        newMovie = self.__movies
         userInput = self.__inputHelper
         msgTitle = 'Enter Movie Title: '
         msgName = 'Enter name: '
         msgRating = 'Enter Rating: '
         msgGenre = 'Enter Genre: '
 
+        # ID
+        newMovie.setID()
         # Title
         title = userInput.stringInput(msgTitle, type='any')
         newMovie.setTitle(title)
 
         # ReleaseDate
-        releaseDate = userInput.dateInput(msgTitle)
+        releaseDate = userInput.dateInput('Enter Release Date: ',)
         newMovie.setReleaseDate(releaseDate)
 
         # Cast
-        cast = userInput.stringInput(msgName, type='name')
+        cast = userInput.stringInput('Eneter movie stars (\'/\' seprated): ', type='name')
         newMovie.setCast(cast)
 
         # Director
-        director = userInput.stringInput(msgName, type='name')
+        director = userInput.stringInput('Eneter director name: ', type='name')
         newMovie.setDirector(director)
 
         # Producer
-        producer = userInput.stringInput(msgName, type='name')
+        producer = userInput.stringInput('Enter Producer name: ', type='name')
         newMovie.setProducer(producer)
 
         # Company
-        company = userInput.stringInput(msgName, type='any')
+        company = userInput.stringInput('Enter company name: ', type='any')
         newMovie.setCompany(company)
 
         # Rating
-        rating = userInput.stringInput(msgRating, type='number')
+        rating = userInput.stringInput('Enter movie rating: ', type='number')
         newMovie.setRating(rating)
 
         # Genre
-        genre = userInput.stringInput(msgGenre, type='name')
+        genre = userInput.stringInput('Enter movie genre (\'/\' seprated): ', type='name')
         newMovie.setGenre(genre)
 
         # Summary
-        summary = userInput.stringInput(msgGenre, type='any')
+        summary = userInput.stringInput('Enter movie summary: ', type='any')
         newMovie.setSummary(summary)
 
+        copies = userInput.stringInput(
+            'Enter Copies Available: ', type='number')
+        self.__dvd.setID(newMovie.getID())
+        self.__dvd.setCopies(int(copies))
+
     def searchdvd(self, searchText, pageNum):
-        m = movies.Movies()
-        dvds = dvd.DVD()
-        return dvds.searchDVD(searchText, pageNum)
+        return self.__dvd .searchDVD(searchText, pageNum)
 
     def dvdList(self, pageNum):
-        m = movies.Movies()
-        dvds = dvd.DVD()
-        dvds.printDVDList(pageNum)
+        self.__dvd .printDVDList(pageNum)
 
     def dvdDetail(self, dvdID):
-        m = movies.Movies()
-        dvds = dvd.DVD()
-        dvds.printDetail(dvdID)
+
+        self.__dvd .printDetail(dvdID)
 
     def updateDvdDetail(self, dataType):
-        m = movies.Movies()
-        dvds = dvd.DVD()
+        m = self.__movies
+        dvds = self.__dvd
         userInput = self.__inputHelper
         msgTitle = 'Enter Movie Title: '
         msgSummary = 'Enter New Summary'
@@ -138,19 +136,22 @@ class CRUD:
         if dataType == 'title':
             title = userInput.stringInput(msgTitle, type='any')
             m.setTitle(title)
+            print('New title set as: ', m.getTitle())
 
         # Summary
         elif dataType == 'summary':
             summary = userInput.stringInput(msgSummary, type='any')
             m.setSummary(summary)
+            print('New summary set as: ', m.getSummary())
 
         # Copies
         elif dataType == 'copies':
             copies = userInput.stringInput(msgCopies, type='number')
             dvds.setID(m.getID())
             dvds.setCopies(copies)
+            print('Current Copies for this DVD is: ', self.__dvd.getCopies())
 
-        m.printDetail()
+        # self.__dvd.printDetail(m.getID())
         # self.__store.printCopies()
 
     def customerList(self, pageNum):
@@ -166,17 +167,67 @@ class CRUD:
         # cus.reset()
 
     def customerListRenting(self, pageNum):
-
-        self.__data.getCustomerRenting().printList(pageNum)
+        self.__customer.setBST('retning')
+        self.__customer.printList(1)
+        # self.__data
+        # self.__data.getCustomerRenting().printList(pageNum)
         # cus.reset()
 
     def rentDvd(self, dvdID, cusID):
-
-        self.__transaction.rentDvd(dvdID, cusID)
+        self.__dvd.setVals(dvdID)
+        copies = self.__dvd.getCopies()
+        if int(copies) > 0:
+            self.__customer.setVals(cusID)
+            customerDVDID = self.__customer.getRenting()
+            if customerDVDID != []:
+                for cd in customerDVDID:
+                    if str(cd) == str(dvdID):
+                        self.__print.printFooter('Customer is already renting this DVD')
+                        return False
+            newCopies = int(copies) - 1
+            self.__dvd.setCopies(newCopies)
+            self.__dvd.updateCopies()
+            self.__dvd.reset()
+            self.__customer.setVals(cusID)
+            r = self.__customer.getRenting()
+            r.append(str(dvdID))
+            self.__customer.setRented(r)
+            self.__print.printFooter('Updated currently rented DVD details.')
+            self.__customer.update()
+            self.__customer.printDetail(cusID)
+        else:
+            self.__print.printFooter('Sorry, no copies available for this DVD')
 
     def returnDVD(self, dvdID, cusID):
+        self.__customer.setVals(cusID)
+        self.__customer.printDetail(cusID)
+        # self.__dvd.setID(dvdID)
+        self.__dvd.setVals(dvdID)
+        rendtingDVDID = self.__customer.getRenting()
+        dvdID = str(dvdID)  # convert int ID to str for storing
+        if dvdID in rendtingDVDID and self.__dvd.getID():
 
-        self.__transaction.returnDvd(dvdID, cusID)
+            # remove DVD ID from customer's renting and add it in rented
+            self.__customer.setVals(cusID)
+            renting = self.__customer.getRenting()
+            rented = self.__customer.getRented()
+            renting.remove(dvdID)
+            self.__customer.setRenting(renting)
+            rented.append(dvdID)
+            self.__customer.setRented(rented)
+            self.__customer.update()
+            self.__customer.printDetail(cusID)
+            self.__customer.reset()
+
+            # add copy back to stock
+            
+            copies = int(self.__dvd.getCopies())
+            self.__dvd.setCopies(copies+1)
+            self.__dvd.updateCopies('update')
+            self.__dvd.reset()
+            # self.__customer.printDetail(cusID)
+        else:
+            return self.__print.printFooter('ID not found')
 
     def saveToFile(self, saveType, dataType=None):
         if dataType == 'customer':
@@ -193,6 +244,18 @@ class CRUD:
                 self.__customer.reloadPages()
                 return
         else:
-            m = movies.Movies()
-            if saveType == 'update':
-                m.updateDetails()
+            if saveType == 'new':
+                self.__movies.addToFile()
+                self.__dvd.addNewDVD()
+            elif saveType == 'update':
+                self.__movies.updateDetails()
+                self.__dvd.updateCopies()
+            elif saveType == 'delete':
+                self.__movies.updateDetails('delete')
+                self.__dvd.updateCopies('delete')
+
+
+
+# c = CRUD()
+# c.rentDvd(200, 32)
+# # c.rentDvd(2, 30)

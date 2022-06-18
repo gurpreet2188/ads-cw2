@@ -4,6 +4,9 @@ import crud
 class Navigation:
     def __init__(self):
         self.__crud = crud.CRUD()
+        
+    def showAddDVD(self):
+        self.__crud.addMovie()
 
     def showDvdLists(self, pageNum):
         self.__crud.dvdList(pageNum)

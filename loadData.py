@@ -1,19 +1,19 @@
-from importlib import reload
-import movies
+# from importlib import reload
+# import movies
 import dvd
 import customer
 
 
 class LoadData:
     def __init__(self):
-        self.movies = movies.Movies()
+        # self.movies = movies.Movies()
         self.dvd = dvd.DVD()
         self.customer = customer.Customer()
         # self.customerRenting = customer.Customer('renting')
 
-    @property
-    def getMovies(self):
-        return self.movies
+    # @property
+    # def getMovies(self):
+    #     return self.movies
 
     @property
     def getDVD(self):

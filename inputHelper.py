@@ -16,11 +16,11 @@ class InputHelper:
             if val.strip() == '' or val == None:  # check if value is blank or none
                 print(self.__errMsg)
             elif type == 'name':
+                check = True
                 # only letters and spaces for customer or employee names
-                if all(x.isspace() or x.isalpha() for x in val):
-                    check = True
-                else:
-                    print(self.__errMsg)
+                # if all(x.isspace() for x in val):
+                # else:
+                #     print(self.__errMsg)
             elif type == 'number':
                 if not val.isnumeric():  # must only contains numbers
                     print(self.__errMsg)

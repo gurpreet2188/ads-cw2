@@ -16,7 +16,7 @@ class Movies:
         self.__genre = None
         self.__summary = None
         self.__copies = 0
-        self.__searchResults = []
+        # self.__searchResults = []
         # linkedlist
         self.__linkedList = linkedList.LinkedList()
         self.__csv = csvHelper.CSVReaderWriter()
@@ -34,8 +34,20 @@ class Movies:
         # self.__linkedList.setPagesAndIndexes()
         self.__head = self.__linkedList.getHead()  # get the linked list from class
 
-    def setID(self, id):
-        self.__id = id
+    def setID(self, movieID=None):
+        if movieID:
+            self.__id = movieID
+            return
+        else:
+            newList = []
+            current = self.__head
+            while current:
+                # print(int(current.data['id']))
+                newList.append(int(current.data['id']))
+                current = current.next
+            
+            maxID = max(newList)
+            self.__id = maxID + 1
 
     def setTitle(self, title):
         self.__title = title
@@ -106,26 +118,31 @@ class Movies:
     def getTotal(self):
         return self.__linkedList.getTotal()
 
-    def updateDetails(self):
+    def updateDetails(self, updateType=None):
         header = ['id', 'genre', 'title', 'cast', 'director',
                   'producer', 'company', 'rating', 'rDate', 'summary']
         updatedList = []
         current = self.__head
         while current:
-            if int(current.data['id']) == int(self.getID()):
-                current.data['title'] = str(self.getTitle())
-                current.data['genre'] = str(self.getGenre())
-                current.data['cast'] = str(self.getCast())
-                current.data['director'] = str(self.getDirector())
-                current.data['producer'] = str(self.getProducer())
-                current.data['rating'] = str(self.getRating())
-                current.data['company'] = str(self.getCompany())
-                current.data['summary'] = str(self.getSummary())
-                current.data['rDate'] = str(self.getRleaseDate())
-            updatedList.append(current.data)
-            current = current.next
+            if updateType == 'delete':
+                if int(current.data['id']) != int(self.getID()):
+                    updatedList.append(current.data)
+                current = current.next
+            else:
+                if int(current.data['id']) == int(self.getID()):
+                    current.data['title'] = str(self.getTitle())
+                    current.data['genre'] = str(self.getGenre())
+                    current.data['cast'] = str(self.getCast())
+                    current.data['director'] = str(self.getDirector())
+                    current.data['producer'] = str(self.getProducer())
+                    current.data['rating'] = str(self.getRating())
+                    current.data['company'] = str(self.getCompany())
+                    current.data['summary'] = str(self.getSummary())
+                    current.data['rDate'] = str(self.getRleaseDate())
+                updatedList.append(current.data)
+                current = current.next
 
-        self.__csv.writerNew('temp.csv', updatedList, header)
+        self.__csv.writerNew('movies.csv', updatedList, header)
 
     def searchTitle(self, searchText):
         results = self.__linkedList.findSimilar(
@@ -160,9 +177,41 @@ class Movies:
     def getLinkList(self):
         return self.__linkedList
     
+    def getValsDict(self):
+        return {
+            'id' : str(self.getID()),
+            'genre': str(self.getGenre()),
+            'title': str(self.getTitle()),
+            'cast': str(self.getCast()),
+            'director': str(self.getDirector()),
+            'producer': str(self.getProducer()),
+            'company' : str(self.getCompany()),
+            'rating' : str(self.getRating()),
+            'rDate' : str(self.getRleaseDate()),
+            'summary': str(self.getSummary())
+        }
+    
+            
+        
+    def addToFile(self):
+        # self.__linkedList.insert(self.getValsDict())
+        item = self.getValsDict()
+        header = []
+        for keys,vals in item.items():
+            header.append(keys)
+
+        self.__linkedList.insert(item)
+        self.__csv.writer('movies.csv', item, header)
+    
     def reset(self):
         self.__linkedList.reset()
         self.setLinkedList()
         self.__linkedList.setTotal(0)
+        
+# m = Movies()
+# m.setLinkedList()
+# m.setID()
+# print(m.getID())
+# m.addToFile()
 
     
